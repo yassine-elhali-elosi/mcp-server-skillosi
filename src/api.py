@@ -11,7 +11,7 @@ class EmployeeItem(BaseModel):
     service: str
 
 SKILLOSI_DATA = {}
-with open("../database_sample.json", "r") as file:
+with open("../data/database_sample.json", "r") as file:
     SKILLOSI_DATA = json.load(file)
 
 EMPLOYEES_DICT = {item['id']: item for item in SKILLOSI_DATA}
