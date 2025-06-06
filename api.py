@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import json
 
-class SkillositItem(BaseModel):
+class EmployeeItem(BaseModel):
     id: Optional[int] = None
     firstName: str
     lastName: str
@@ -11,10 +11,10 @@ class SkillositItem(BaseModel):
     service: str
 
 SKILLOSI_DATA = {}
-with open("skillosi_data.json", "r") as file:
+with open("database_sample.json", "r") as file:
     SKILLOSI_DATA = json.load(file)
 
-SKILLOSI_DICT = {item['id']: item for item in SKILLOSI_DATA}
+EMPLOYEES_DICT = {item['id']: item for item in SKILLOSI_DATA}
 
 app = FastAPI()
 
@@ -25,26 +25,26 @@ def get_root():
 @app.get("/skillosi")
 def get_all_employees():
     """
-    Fetch all Skillosi employees.
+    Get all employees.
     """
     return SKILLOSI_DATA
 
-@app.get("/skillosi/{skillosi_id}")
-def get_employee_by_id(skillosi_id: int):
+@app.get("/skillosi/{employee_id}")
+def get_employee_by_id(employee_id: int):
     """
-    Fetch a Skillosi employee by ID.
+    Get an employee by ID.
     """
-    if skillosi_id not in SKILLOSI_DICT:
+    if employee_id not in EMPLOYEES_DICT:
         return {"error": "id not found."}
-    return SKILLOSI_DICT[skillosi_id]
+    return EMPLOYEES_DICT[employee_id]
 
 @app.post("/skillosi")
-def create_employee(item: SkillositItem):
+def create_employee(employee: EmployeeItem):
     """
-    Create a new Skillosi employee.
+    Create a new employee.
     If the ID is not provided, it will be auto-generated.
     Args:
-        item (SkillositItem): The Skillosi employee data to create.
+        item (EmployeeItem): The employee data to create.
     Format:
         {
             "firstName": "John",
@@ -53,36 +53,36 @@ def create_employee(item: SkillositItem):
             "service": "Engineering"
         }
     """
-    if item.id is None:
-        item.id = max(SKILLOSI_DICT.keys()) + 1 if SKILLOSI_DICT else 1
+    if employee.id is None:
+        employee.id = max(EMPLOYEES_DICT.keys()) + 1 if EMPLOYEES_DICT else 1
         
-    item_dict = item.model_dump()
-    SKILLOSI_DICT[item.id] = item_dict
-    SKILLOSI_DATA.append(item_dict)
-    return item_dict
+    employee_item = employee.model_dump()
+    EMPLOYEES_DICT[employee.id] = employee_item
+    SKILLOSI_DATA.append(employee_item)
+    return employee_item
 
 @app.put("/skillosi/{skillosi_id}")
-def update(skillosi_id: int, item: SkillositItem):
-    if skillosi_id not in SKILLOSI_DICT:
-        return {"error": "id not found."}
+def update(skillosi_id: int, employee: EmployeeItem):
+    if skillosi_id not in EMPLOYEES_DICT:
+        return {"error": "employee id not found."}
     
-    item_dict = item.model_dump()
-    item_dict["id"] = skillosi_id
-    SKILLOSI_DICT[skillosi_id] = item_dict
+    employee_item = employee.model_dump()
+    employee_item["id"] = skillosi_id
+    EMPLOYEES_DICT[skillosi_id] = employee_item
     
-    for i, entry in enumerate(SKILLOSI_DATA):
-        if entry["id"] == skillosi_id:
-            SKILLOSI_DATA[i] = item_dict
+    for i, element in enumerate(SKILLOSI_DATA):
+        if element["id"] == skillosi_id:
+            SKILLOSI_DATA[i] = employee_item
             break
     
-    return item_dict
+    return employee_item
 
-@app.delete("/skillosi/{skillosi_id}")
-def delete(skillosi_id: int):
-    if skillosi_id not in SKILLOSI_DICT:
+@app.delete("/skillosi/{employee_id}")
+def delete(employee_id: int):
+    if employee_id not in EMPLOYEES_DICT:
         return {"error": "id not found."}
     
-    SKILLOSI_DICT.pop(skillosi_id)
-    SKILLOSI_DATA[:] = [item for item in SKILLOSI_DATA if item["id"] != skillosi_id]
+    EMPLOYEES_DICT.pop(employee_id)
+    SKILLOSI_DATA[:] = [employee for employee in SKILLOSI_DATA if employee["id"] != employee_id]
     
-    return {"deleted": skillosi_id}
+    return {"deleted": employee_id}

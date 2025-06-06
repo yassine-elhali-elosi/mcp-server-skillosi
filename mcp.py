@@ -2,18 +2,16 @@ from typing import Any
 import httpx
 from mcp.server.fastmcp import FastMCP
 
-import mantis_scrapping
+mcp = FastMCP("skillosi")
 
-mcp = FastMCP("elosi")
-
-SKILLOSI_API_BASE = "http://localhost:8000/elosi"
-USER_AGENT = "elosi-app/1.0"
+SKILLOSI_API_BASE = "http://localhost:8000/skillosi"
+USER_AGENT = "skillosi-app/1.0"
 
 ###
 
-async def make_elosi_request(url: str, method: str = "GET", data: Any = None) -> dict[str, Any] | None:
+async def call_skillosi_api(url: str, method: str = "GET", data: Any = None) -> dict[str, Any] | None:
     """
-    Make a request to the Skillosi API to manipulate employee data.
+    Make a request to the Skillosi API to manipulate employees data.
     Args:
         url (str): The API route URL to make the request to.
         method (str): The HTTP method to use (GET, POST, PUT).
@@ -43,91 +41,81 @@ async def make_elosi_request(url: str, method: str = "GET", data: Any = None) ->
         except Exception:
             return None
         
-def format_skillosi(item: dict) -> str:
+def format_employee(employee: dict) -> str:
     """
-    Format a Skillosi employee data into a readable string.
+    Format an employee data into a readable string.
     Args:
-        item (dict): The Skillosi employee data.
+        employee (dict): The employee data.
     Returns:
-        str: Formatted string of the Skillosi employee data.
+        str: Formatted string of the employee data.
     """
 
     return f"""
-        id: {item.get('id', 'Unknown')}
-        First name: {item.get('firstName', 'Unknown')}
-        Last name: {item.get('lastName', 'Unknown')}
-        Current work location: {item.get('currentWorkLocation', 'Unknown')}
-        Service: {item.get('service', 'Unknown')}
+        id: {employee.get('id', 'Unknown')}
+        First name: {employee.get('firstName', 'Unknown')}
+        Last name: {employee.get('lastName', 'Unknown')}
+        Current work location: {employee.get('currentWorkLocation', 'Unknown')}
+        Service: {employee.get('service', 'Unknown')}
     """
 
 ###
 
 @mcp.tool()
-async def get_skillosi_all() -> str:
+async def get_all_employees() -> str:
     """
-    Fetch all Skillosi employees.
+    Get all employees.
     Returns:
-        str: Formatted string of all Skillosi employees.
+        str: Formatted string of all employees.
     """
     url = SKILLOSI_API_BASE
-    data = await make_elosi_request(url, method="GET")
+    data = await call_skillosi_api(url, method="GET")
 
     if not data:
-        return "Unable to fetch Skillosi data or no data found."
+        return "Unable to get all employees or no employees found."
     
     if not isinstance(data, list) or not data:
-        return "No Skillosi entries found."
+        return "No employees found."
 
-    skillosi_entries = [format_skillosi(item) for item in data]
-    return "\n---\n".join(skillosi_entries)
+    employees = [format_employee(employee) for employee in data]
+    return "\n---\n".join(employees)
 
 @mcp.tool()
-async def get_skillosi_by_id(skillosi_id: int) -> str:
+async def get_employee_by_id(employee_id: int) -> str:
     """
-    Fetch a Skillosi employee by ID.
+    Get an employee by ID.
     Args:
-        skillosi_id (int): The ID of the Skillosi employee.
+        employee_id (int): The ID of the employee.
     Returns:
-        str: Formatted string of the Skillosi employee data.
+        str: Formatted string of the employee data.
     """
-    url = f"{SKILLOSI_API_BASE}/{skillosi_id}"
-    data = await make_elosi_request(url, method="GET")
+    url = f"{SKILLOSI_API_BASE}/{employee_id}"
+    data = await call_skillosi_api(url, method="GET")
 
     if not data:
-        return "Unable to fetch Skillosi data or no data found."
+        return "Unable to get employee with id " + employee_id + "."
     
-    return format_skillosi(data)
+    return format_employee(data)
 
 @mcp.tool()
-async def create_skillosi(item: dict) -> str:
+async def create_employee(employee: dict) -> str:
     """
-    Create a new Skillosi employee.
+    Create a new employee.
     Args:
-        item (dict): The Skillosi employee data to create.
+        employee (dict): The employee data to create.
     """
     url = SKILLOSI_API_BASE
-    data = await make_elosi_request(url, method="POST", data=item)
+    data = await call_skillosi_api(url, method="POST", data=employee)
 
     if not data:    
-        return "Unable to create Skillosi entry."
+        return "Unable to create an employee."
     
-    return format_skillosi(data)
-
-@mcp.tool()
-async def get_mantis_tasks() -> str:
-    """
-    Fetch tasks/activities from Mantis.
-    Returns:
-        str: Formatted string of Mantis tasks.
-    """
-    bugnotes = mantis_scrapping.scrape_project()
-    
-    if not bugnotes:
-        return "No Mantis tasks found."
-    
-    return bugnotes
+    return format_employee(data)
 
 ### mcp.tool() for update
+# ...
+
+### mcp.tool() for delete
+# ...
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")
