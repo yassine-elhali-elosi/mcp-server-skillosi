@@ -7,3 +7,10 @@ Un serveur MCP conçu pour interragir avec l'outil Skillosi pour récupérer la 
 ```cmd
 uv sync
 ```
+
+## Lancer l'API
+
+```cmd
+cd src
+fastapi dev api.py
+```
