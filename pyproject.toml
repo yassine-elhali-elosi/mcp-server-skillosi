@@ -1,0 +1,11 @@
+[project]
+name = "skillosi"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.9.2",
+    "fastapi>=0.104.0",
+    "pydantic>=2.0.0",
+]
